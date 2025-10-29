@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.local
+
+# Model files (large - exclude from git)
+models/phishguard-model/*.safetensors
+models/phishguard-model/*.pt
+models/phishguard-model/*.bin
+models/phishguard-model/optimizer.pt
+models/phishguard-model/scheduler.pt
+models/phishguard-model/rng_state.pth
+
+# Keep model config files
+!models/phishguard-model/config.json
+!models/phishguard-model/tokenizer*.json
+!models/phishguard-model/*.txt
+
+# Data files (large - exclude from git)
+data/*.csv
+data/*.json
+data/*.parquet
+
+# Logs
+logs/
+*.log
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+*.tmp
