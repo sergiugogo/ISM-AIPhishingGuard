@@ -2,17 +2,29 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red.svg)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-PhishGuard is a production-ready API service for detecting phishing emails using a fine-tuned DistilRoBERTa transformer model. It provides real-time email analysis with confidence scores and detailed explanations.
+PhishGuard is a production-ready API service for detecting phishing emails using a fine-tuned RoBERTa transformer model. Built as a learning project to understand the complete ML pipeline from data collection to deployment, it achieves 99.7% accuracy on test samples and provides real-time email analysis with detailed explanations.
 
-## Features
+## 🎯 Project Goals
 
-- 🤖 **AI-Powered Detection**: Fine-tuned DistilRoBERTa model for accurate phishing detection
-- 🚀 **Production Ready**: Comprehensive error handling, logging, and monitoring
-- 🔒 **Secure**: API key authentication and rate limiting
-- 📊 **Feature Extraction**: Automatic detection of suspicious URLs, urgency language, and more
-- 🐳 **Containerized**: Docker and Docker Compose support
+This project was created as a comprehensive learning experience to understand:
+- End-to-end fine-tuning of transformer models
+- Data collection and preparation for ML
+- Building production-ready ML APIs
+- Model evaluation and deployment
+
+It demonstrates that you don't need massive models to build effective, focused ML applications.
+
+## ✨ Features
+
+- 🤖 **Fine-tuned RoBERTa-base**: 125M parameter transformer model
+- 🎯 **High Accuracy**: 99.7% on 1,000 test samples (Precision: 99.8%, Recall: 99.6%)
+- ⚡ **Fast Inference**: ~50ms on GPU, ~200ms on CPU
+- 🔍 **Explainable AI**: Detailed reasoning for each prediction
+- 📊 **Feature Extraction**: IP detection, urgency analysis, URL scanning
+- 🐳 **Docker Ready**: Easy deployment with Docker Compose
 - 📝 **Well Documented**: OpenAPI/Swagger documentation
 - ✅ **Tested**: Comprehensive test suite
 
@@ -21,39 +33,66 @@ PhishGuard is a production-ready API service for detecting phishing emails using
 ### Prerequisites
 
 - Python 3.11+
-- pip
+- 4GB+ RAM
+- (Optional) NVIDIA GPU with CUDA support for faster inference
 - (Optional) Docker and Docker Compose
 
 ### Installation
 
 1. **Clone the repository**
 ```bash
-git clone <repository-url>
-cd phishguard
+git clone https://github.com/sergiugogo/ISM-AIPhishingGuard.git
+cd ISM-AIPhishingGuard
 ```
 
-2. **Install dependencies**
+2. **Create virtual environment**
+```bash
+python -m venv .venv
+# On Windows:
+.venv\Scripts\activate
+# On Linux/Mac:
+source .venv/bin/activate
+```
+
+3. **Install dependencies**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Configure environment**
+4. **Configure environment**
 ```bash
 cp .env.example .env
-# Edit .env and set your API_KEY and other settings
+# Edit .env and set your API_KEY
+# Recommended: Generate a strong key
+# python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-4. **Train the model** (if not already trained)
+5. **Prepare training data**
+```bash
+# This downloads and combines datasets from HuggingFace and PhishTank
+python scripts/prepare_training_data.py
+```
+
+6. **Train the model** (takes ~45-60 minutes on GPU)
 ```bash
 python src/train.py
 ```
 
-5. **Run the API**
+7. **Evaluate the model**
 ```bash
-uvicorn src.api.main:app --host 0.0.0.0 --port 8000
+python scripts/evaluate_model.py
 ```
 
-Visit `http://localhost:8000/docs` for interactive API documentation.
+8. **Run the API**
+```bash
+# Development mode
+python scripts/start_api.py --reload
+
+# Production mode
+python scripts/start_api.py --workers 4
+```
+
+Visit `http://localhost:8000/docs` for interactive API documentation (when DEBUG=true).
 
 ### Docker Deployment
 
@@ -147,43 +186,96 @@ phishguard/
 │   ├── utils/
 │   │   └── preprocess.py    # Email preprocessing
 │   └── train.py             # Model training script
-├── models/                   # Trained models
-├── data/                     # Training data
+├── scripts/
+│   ├── prepare_training_data.py  # Multi-source data collection
+│   ├── evaluate_model.py         # Model evaluation
+│   └── start_api.py              # Production startup script
+├── models/
+│   └── phishguard-model/    # Trained model files
+├── data/                     # Training/validation data (gitignored)
 ├── tests/                    # Test suite
-├── config.py                # Configuration
+├── config.py                # Configuration management
 ├── Dockerfile               # Docker image
 ├── docker-compose.yml       # Docker Compose
+├── .env.example             # Environment template
 └── requirements.txt         # Python dependencies
 ```
 
 ## Model Training
 
-The model is fine-tuned on phishing email datasets:
+PhishGuard uses a multi-source dataset approach to ensure quality and balance:
+
+### Data Sources
+1. **HuggingFace Datasets**:
+   - zefang-liu/phishing-email-dataset (18,650 emails)
+   - SetFit/enron_spam (31,716 emails)
+2. **PhishTank**: Verified phishing URLs converted to email samples (5,000 emails)
+
+### Training Process
 
 ```bash
+# 1. Prepare data (downloads and combines all sources)
+python scripts/prepare_training_data.py
+
+# 2. Train the model
 python src/train.py
+
+# 3. Evaluate performance
+python scripts/evaluate_model.py
 ```
 
-**Training features:**
-- Base model: DistilRoBERTa
-- Automatic GPU detection
-- Checkpoint saving
-- Progress logging
+**Training Configuration:**
+- Base model: RoBERTa-base (125M parameters)
+- Training samples: 41,094 emails (80%)
+- Validation samples: 10,274 emails (20%)
+- Epochs: 5
+- Batch size: 8
+- Learning rate: 2e-5
+- Optimization: FP16 on GPU
+- Training time: ~45-60 minutes (RTX 4060 GPU)
+
+**Model Performance:**
+- Test Accuracy: 99.7% (on 1,000 validation samples)
+- Precision: 99.8%
+- Recall: 99.6%
+- F1 Score: 99.7%
+- Only 3 misclassifications in 1,000 test cases
 
 ## Security Considerations
 
 1. **API Key**: Always use strong, random API keys in production
-2. **Rate Limiting**: Configure appropriate rate limits for your use case
+   ```bash
+   python -c "import secrets; print(secrets.token_urlsafe(32))"
+   ```
+2. **CORS**: Configure `ALLOWED_ORIGINS` in `.env` to restrict access
 3. **Input Validation**: All inputs are validated and sanitized
 4. **HTTPS**: Use HTTPS in production (configure reverse proxy)
-5. **Container Security**: Run as non-root user in Docker
+5. **Container Security**: Docker runs as non-root user
+6. **Environment Variables**: Never commit `.env` file to git
+
+## Learning Resources
+
+This project demonstrates:
+- **Data Engineering**: Multi-source data collection and cleaning
+- **Fine-tuning**: Transfer learning with transformer models
+- **API Development**: Production-ready FastAPI implementation
+- **Docker Deployment**: Containerization and orchestration
+- **Testing**: Comprehensive test coverage
+
+For detailed explanations, see:
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Production deployment guide
+- [DATA_SOURCES.md](DATA_SOURCES.md) - Dataset information
+- [TECHNICAL_EXPLANATION.md](TECHNICAL_EXPLANATION.md) - Technical deep dive
 
 ## Performance
 
-- **Inference Time**: ~100-200ms per email (CPU)
-- **GPU Support**: Automatic CUDA detection for faster inference
-- **Memory**: ~1GB RAM for model + API
-- **Throughput**: 60+ requests/minute (configurable)
+- **Inference Time**: 
+  - GPU (CUDA): ~50ms per email
+  - CPU: ~200ms per email
+- **Accuracy**: 99.7% on test samples
+- **Memory**: ~500MB for model, ~1GB total with API
+- **Throughput**: Up to 20 requests/second on GPU
+- **GPU Support**: Automatic CUDA detection (RTX 4060 tested)
 
 ## Monitoring
 
@@ -208,16 +300,30 @@ MIT License - see LICENSE file for details
 ## Support
 
 For issues and questions:
-- Create an issue on GitHub
-- Check the API documentation at `/docs`
+- Open an issue on [GitHub](https://github.com/sergiugogo/ISM-AIPhishingGuard/issues)
+- Check the API documentation at `/docs` (when DEBUG=true)
+- See [DEPLOYMENT.md](DEPLOYMENT.md) for deployment help
+
+## Acknowledgments
+
+**Datasets:**
+- [zefang-liu/phishing-email-dataset](https://huggingface.co/datasets/zefang-liu/phishing-email-dataset)
+- [SetFit/enron_spam](https://huggingface.co/datasets/SetFit/enron_spam)
+- [PhishTank](https://phishtank.org/) - Verified phishing URLs
+
+**Technologies:**
+- [RoBERTa](https://huggingface.co/roberta-base) by Facebook AI
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Transformers](https://huggingface.co/transformers/) by HuggingFace
+- [PyTorch](https://pytorch.org/)
 
 ## Roadmap
 
-- [ ] Redis-based rate limiting
-- [ ] Prometheus metrics
-- [ ] Batch prediction endpoint
-- [ ] Email reputation checking
-- [ ] Advanced feature extraction
+- [ ] Extended evaluation on larger test sets
+- [ ] Additional data sources integration
+- [ ] Real-time phishing URL database updates
+- [ ] Email header analysis
 - [ ] Multi-language support
+- [ ] Performance benchmarking suite
 
 

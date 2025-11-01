@@ -59,3 +59,10 @@ Thumbs.db
 # Temporary
 tmp/
 *.tmp
+
+# Documentation (exclude helper files, keep main docs)
+linkedin_posts.md
+BUSINESS_GUIDE.md
+DATASET_CONFIG.md
+QUICKSTART.md
+TECHNICAL_EXPLANATION.md
