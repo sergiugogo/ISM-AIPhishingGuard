@@ -53,7 +53,7 @@ def main():
     
     # Load validation set if it exists
     if os.path.exists(val_path):
-        print(f"\n📂 Loading validation set: {val_path}")
+        print(f"\n Loading validation set: {val_path}")
         val_df = pd.read_csv(val_path)
         print(f" Validation samples: {len(val_df):,}")
         print(f" Label distribution:\n{val_df['label'].value_counts()}")
@@ -154,6 +154,7 @@ def main():
     model.save_pretrained("models/phishguard-model")
     tokenizer.save_pretrained("models/phishguard-model")
     print(" Model trained and saved to 'models/phishguard-model/'")
+
 
     if device == "cuda":
         print(f" GPU memory used: {torch.cuda.memory_allocated(0)/1e6:.2f} MB")
