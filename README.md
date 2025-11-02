@@ -262,11 +262,6 @@ This project demonstrates:
 - **Docker Deployment**: Containerization and orchestration
 - **Testing**: Comprehensive test coverage
 
-For detailed explanations, see:
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Production deployment guide
-- [DATA_SOURCES.md](DATA_SOURCES.md) - Dataset information
-- [TECHNICAL_EXPLANATION.md](TECHNICAL_EXPLANATION.md) - Technical deep dive
-
 ## Performance
 
 - **Inference Time**: 
@@ -302,7 +297,6 @@ MIT License - see LICENSE file for details
 For issues and questions:
 - Open an issue on [GitHub](https://github.com/sergiugogo/ISM-AIPhishingGuard/issues)
 - Check the API documentation at `/docs` (when DEBUG=true)
-- See [DEPLOYMENT.md](DEPLOYMENT.md) for deployment help
 
 ## Acknowledgments
 
